@@ -1,0 +1,35 @@
+package cn.magic.vo;
+
+import cn.magic.entity.SetmealDish;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SetmealVO implements Serializable {
+
+    private Long id;
+    private Long categoryId;
+    private String name;
+    private BigDecimal price;
+    private Integer status;
+    private String description;
+    private String image;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
+
+    private String categoryName;
+    private List<SetmealDish> setmealDishes = new ArrayList<>();
+}

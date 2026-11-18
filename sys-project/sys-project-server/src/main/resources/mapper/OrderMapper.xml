@@ -1,0 +1,61 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.magic.mapper.OrderMapper">
+
+    <select id="pageQuery" resultType="orderVO">
+        SELECT * FROM orders
+        <where>
+            <if test="orderPageQueryDTO.keyword != null and orderPageQueryDTO.keyword != ''">
+                AND (number LIKE CONCAT('%', #{orderPageQueryDTO.keyword}, '%')
+                     OR consignee LIKE CONCAT('%', #{orderPageQueryDTO.keyword}, '%'))
+            </if>
+            <if test="orderPageQueryDTO.status != null">
+                AND status = #{orderPageQueryDTO.status}
+            </if>
+            <if test="orderPageQueryDTO.beginTime != null and orderPageQueryDTO.beginTime != ''">
+                AND order_time &gt;= #{orderPageQueryDTO.beginTime}
+            </if>
+            <if test="orderPageQueryDTO.endTime != null and orderPageQueryDTO.endTime != ''">
+                AND order_time &lt;= #{orderPageQueryDTO.endTime}
+            </if>
+        </where>
+        ORDER BY order_time DESC
+    </select>
+
+    <select id="getOrderTrend" resultType="map">
+        SELECT 
+            DATE_FORMAT(order_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS orderCount,
+            COALESCE(SUM(CASE WHEN status = 4 THEN amount ELSE 0 END), 0) AS revenue
+        FROM orders
+        WHERE order_time &gt;= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(order_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="getDishRanking" resultType="map">
+        SELECT 
+            d.name AS dishName,
+            COUNT(*) AS salesCount,
+            COALESCE(SUM(od.amount), 0) AS totalAmount
+        FROM order_detail od
+        LEFT JOIN dish d ON od.dish_id = d.id
+        GROUP BY od.dish_id, d.name
+        ORDER BY salesCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="getCategoryRanking" resultType="map">
+        SELECT 
+            c.name AS categoryName,
+            COUNT(*) AS salesCount,
+            COALESCE(SUM(od.amount), 0) AS totalAmount
+        FROM order_detail od
+        LEFT JOIN dish d ON od.dish_id = d.id
+        LEFT JOIN category c ON d.category_id = c.id
+        GROUP BY d.category_id, c.name
+        ORDER BY salesCount DESC
+    </select>
+
+</mapper>

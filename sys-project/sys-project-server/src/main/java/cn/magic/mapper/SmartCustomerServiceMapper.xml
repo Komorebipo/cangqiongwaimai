@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.magic.mapper.SmartCustomerServiceMapper">
+
+    <resultMap id="MsgResponseMap" type="smartCustomerServiceVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="message_content" property="messageContent"/>
+        <result column="message_type" property="messageType"/>
+        <result column="send_time" property="sendTime"/>
+        <result column="is_read" property="isRead"/>
+        <result column="conversation_id" property="conversationId"/>
+    </resultMap>
+
+    <!-- 查询用户历史对话记录 -->
+    <select id="queryHistoryMsg" resultMap="MsgResponseMap">
+        SELECT
+        id, user_id, message_content, message_type, send_time, is_read, conversation_id
+        FROM
+        smart_customer_service
+        WHERE
+        user_id = #{userId}
+        <if test="conversationId != null and conversationId != ''">
+            AND conversation_id = #{conversationId}
+        </if>
+        ORDER BY
+        send_time ASC
+    </select>
+
+    <!-- 标记消息为已读 -->
+    <update id="markMsgAsRead">
+        UPDATE smart_customer_service
+        SET is_read = 1
+        WHERE user_id = #{userId}
+          AND conversation_id = #{conversationId}
+          AND is_read = 0
+    </update>
+</mapper>
